@@ -24,26 +24,30 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 const formSchema = z.object({
-  username: z.string().min(1, {
-    message: "username is required",
+  room_name: z.string().min(1, {
+    message: "room_name is required",
+  }),
+  capacity: z.string().min(1, {
+    message: "capacity is required",
   }),
 });
 
-const LoginForm = () => {
+const ReservationForm = () => {
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      room_name: "",
+      capacity: "",
     },
   });
 
   const handleSubmit = async (data: any) => {
     try {
-      const res = await axiosInstance.post("http://127.0.0.1:8000/users", data);
+      const res = await axiosInstance.post("http://127.0.0.1:8000/rooms", data);
       console.log(res);
-      router.push("/room");
+      router.push("/reservation");
     } catch (error) {
       console.error(error);
     }
@@ -65,16 +69,16 @@ const LoginForm = () => {
           >
             <FormField
               control={form.control}
-              name="username"
+              name="room_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                    username
+                    room_name
                   </FormLabel>
                   <FormControl>
                     <Input
                       className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
-                      placeholder="Enter your username"
+                      placeholder="Enter your room_name"
                       {...field}
                     />
                   </FormControl>
@@ -82,7 +86,27 @@ const LoginForm = () => {
                 </FormItem>
               )}
             />
-            <Button className="w-full">Sign In</Button>
+            <FormField
+              control={form.control}
+              name="capacity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    capacity
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
+                      placeholder="Enter capacity"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button className="w-full">Register</Button>
           </form>
         </Form>
       </CardContent>
@@ -90,4 +114,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default ReservationForm;
