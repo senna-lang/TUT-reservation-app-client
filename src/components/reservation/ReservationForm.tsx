@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,6 +18,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { axiosInstance } from "@/lib/axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -24,22 +41,39 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 const formSchema = z.object({
+  username: z.string().min(1, {
+    message: "user_name is required",
+  }),
   room_name: z.string().min(1, {
     message: "room_name is required",
   }),
   capacity: z.string().min(1, {
     message: "capacity is required",
   }),
+  date: z.string().min(1, {
+    message: "date is required",
+  }),
+  start_time: z.string().min(1, {
+    message: "start_time is required",
+  }),
+  end_time: z.string().min(1, {
+    message: "end_time is required",
+  }),
 });
 
-const ReservationForm = () => {
+const ReservationForm = ({ users, rooms }: { users: any; rooms: any }) => {
   const router = useRouter();
+  const [date, setDate] = React.useState<Date>()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      username: "",
       room_name: "",
       capacity: "",
+      date: "",
+      start_time: "",
+      end_time: "",
     },
   });
 
@@ -56,7 +90,7 @@ const ReservationForm = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Login</CardTitle>
+        <CardTitle>Reservation</CardTitle>
         <CardDescription>
           Log into your account with your credentials
         </CardDescription>
@@ -69,6 +103,32 @@ const ReservationForm = () => {
           >
             <FormField
               control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    username
+                  </FormLabel>
+                  <FormControl>
+                    <Select {...field}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select USER" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.map((user: any) => (
+                          <SelectItem key={user.user_id} value={user.user_id}>
+                            {user.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="room_name"
               render={({ field }) => (
                 <FormItem>
@@ -76,11 +136,18 @@ const ReservationForm = () => {
                     room_name
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
-                      placeholder="Enter your room_name"
-                      {...field}
-                    />
+                    <Select {...field}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select Room" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rooms.map((room: any) => (
+                          <SelectItem key={room.user_id} value={room.user_id}>
+                            {room.room_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -101,6 +168,43 @@ const ReservationForm = () => {
                       placeholder="Enter capacity"
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Popover {...field}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[280px] justify-start text-left font-normal",
+                            !date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {date ? (
+                            format(date, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
